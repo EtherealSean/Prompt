@@ -9,11 +9,12 @@
     </style>
 </head>
 <body>
-
-    <div style="display: flex;">
-        <div style="flex: 30%;">
+    <div class="sidebars">
+        <div class="sidebar" id="sidebar1">
             <h2>Public Goods Game Settings</h2>
-            <p>Some settings are fixed for displaying.</p>
+            <p>These settings will change the prompts. When communicating, the prompt will be 
+                System + Communication part; when deciding their contribution,
+                the prompt will be System + Action part. Some settings are fixed for displaying.</p>
             <p>Number of Players: 5</p>
             <p>Number of Rounds: 10</p>
             <p>Number of Liars: 1</p>
@@ -44,13 +45,19 @@
                 <option value="no">No</option>
             </select><br>
             
-            <label for="com_cot">Include Thoughts in Dialogue History:</label><br>
+            <label for="com_cot">Include Communication Thoughts in Dialogue History:</label><br>
             <input type="checkbox" id="com_cot" name="com_cot"><br>
             
             <label for="reputation">Use Reputation System:</label><br>
             <input type="checkbox" id="reputation" name="reputation"><br>
             
-            <button onclick="updatePGG()">Update Prompts</button>
+            <style>
+                .large-button {
+                    padding: 10px 20px; /* Change these values to adjust the size of the button */
+                    font-size: 20px; /* Change this value to adjust the size of the text */
+                }
+            </style>
+            <button class="large-button" onclick="updatePGG()">Update Prompts</button>
 
             <h3>Other Settings</h3>
             <p>These settings will not change the prompts.</p>
@@ -66,7 +73,7 @@
             <label for="shuffle_speaker">Shuffle Speaker Order:</label><br>
             <input type="checkbox" id="shuffle_speaker" name="shuffle_speaker"><br>
 
-            <label for="com_times">Communication Times per Round:</label><br>
+            <label for="com_times">Communication Times Each Round:</label><br>
             <input type="number" id="com_times" name="com_times" value="1"><br>
 
             <label for="token_initialization">Token Allocation:</label><br>
@@ -85,7 +92,7 @@
             <label for="rand_min">Minimum Number of Tokens:</label><br>
             <input type="number" id="rand_min" name="rand_min" value="11"><br>
             
-            <p>If Adopting Reputation (Use a rater to rank players' reputation)</p>
+            <p>If Adopting Reputation (Use a LLM rater to rank players' reputation)</p>
             <label for="rater_model">Rater Model:</label><br>
             <select id="rater_model" name="rater_model">
                 <option value="gpt-4-turbo">gpt-4-turbo</option>
@@ -98,88 +105,183 @@
             <input type="number" id="rater_memory" name="rater_memory" value="3"><br>
         </div>
 
-        <div style="flex: 70%;">
-            <h3>System</h3>
+        <div class="sidebar" id="sidebar2">
+            <h2>System</h2>
             <p id="System"></p>
-            <h3>Communication</h3>
+            <h2>Communication</h2>
             <p id="Comm"></p>
-            <h3>Action</h3>
+            <h2>Action</h2>
             <p id="Action"></p>
         </div>
     </div>
+
+    <style>
+        .sidebars {
+            display: flex;
+        }
+        .sidebar {
+            width: 25%;
+            height: 100vh;
+            overflow: auto;
+            position: fixed;
+        }
+        #sidebar2 {
+            width: 73%;
+            right: 0;
+        }
+    </style>
     
     <script>
-        function updatePGG() {
-            var obs_mode = document.getElementById('obs_mode').value;
-            var com_mode = document.getElementById('com_mode').value;
-            var if_liars_are_informed = document.getElementById('if liars are informed').value;
-            var if_others_are_informed = document.getElementById('if others are informed').value;
-            var com_cot = document.getElementById('com_cot').checked;
-            var reputation = document.getElementById('reputation').checked;
-            // <h3>Prompts for Liars</h3>;
-            // <h4>System</h4>;
-            document.getElementById('System').innerText = "You are player_4.";
-            document.getElementById('System').innerText += "\n(Liars):\n";
-            if (if_liars_are_informed == "yes") {
-                document.getElementById('System').innerText += "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
-            } else {
-                document.getElementById('System').innerText += "Actually, you are a liar to tell lies to gain more benefits by free rides. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
-            }
-            document.getElementById('System').innerText += "\n(Others):\n";
-            if (if_others_are_informed == "yes") {
-                document.getElementById('System').innerText += "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
-            } else {
-                document.getElementById('System').innerText += "";
-            }
-            document.getElementById('System').innerText += "\n\nYou are participating in a game played by 5 players over 10 rounds. You can see the contribution results of";
-            if (obs_mode == "full") {
-                document.getElementById('System').innerText += " all players.";
-            } else if (obs_mode == "partial") {
-                document.getElementById('System').innerText += " part of players.";
-            } else {
-                document.getElementById('System').innerText += " none of players.";
-            }
-            if (com_mode == "full") {
-                document.getElementById('System').innerText += " You can communicate with all players.\n";
-            } else if (com_mode == "partial") {
-                document.getElementById('System').innerText += " You can communicate with part of players.\n";
-            } else {
-                document.getElementById('System').innerText += " You cannot communicate with any player.\n";
-            }
-            document.getElementById('System').innerText += "\nGame Rules:\n" + 
+        var obs_mode = document.getElementById('obs_mode').value;
+        var com_mode = document.getElementById('com_mode').value;
+        var if_liars_are_informed = document.getElementById('if liars are informed').value;
+        var if_others_are_informed = document.getElementById('if others are informed').value;
+        var com_cot = document.getElementById('com_cot').checked;
+        var reputation = document.getElementById('reputation').checked;
+
+        var old_obs_mode = obs_mode;
+        var old_com_mode = com_mode;
+        var old_if_liars_are_informed = if_liars_are_informed;
+        var old_if_others_are_informed = if_others_are_informed;
+        var old_com_cot = com_cot;
+        var old_reputation = reputation;
+
+        var system1 = document.createElement('span');
+        var system2 = document.createElement('span');
+        var system3 = document.createElement('span');
+        var system4 = document.createElement('span');
+        var system5 = document.createElement('span');
+        var system6 = document.createElement('span');
+        var system7 = document.createElement('span');
+        var system8 = document.createElement('span');
+
+        var comm1 = document.createElement('span');
+        var comm2 = document.createElement('span');
+        var comm3 = document.createElement('span');
+        var comm4 = document.createElement('span');
+        var comm5 = document.createElement('span');
+        var comm6 = document.createElement('span');
+        var comm7 = document.createElement('span');
+        var comm8 = document.createElement('span');
+        var comm9 = document.createElement('span');
+        var comm10 = document.createElement('span');
+        var comm11 = document.createElement('span');
+        var comm12 = document.createElement('span');
+
+        var act1 = document.createElement('span');
+        var act2 = document.createElement('span');
+        var act3 = document.createElement('span');
+        var act4 = document.createElement('span');
+
+        window.onload = function() {
+            // System
+            system1.innerText = "You are player_4.\n(Liars):\n";
+            system2.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
+            system3.innerText = "\n(Others):\n";
+            system4.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
+            system5.innerText = "\n\nYou are participating in a game played by 5 players over 10 rounds. You can see the contribution results of";
+            system6.innerText = " part of players.";
+            system7.innerText = " You can communicate with part of players.\n";
+            system8.innerText = "\nGame Rules:\n" + 
                 "1. In each round, you, as a player, must decide how many of your private tokens you wish to contribute secretly to the public pot.\n" +
                 "2. The total tokens in this pot will be multiplied by the factor 2 to create the 'public good' payoff.\n" +
                 "3. This payoff will then be evenly divided among all players, regardless of their individual contribution.\n" +
                 "4. Any tokens you do not contribute will be retained in your private collection.\n" +
                 "5. Current tokens you have can be only seen by you, so do other players.\n";
-            // <h4>Communication</h4>;
-            document.getElementById('Comm').innerText = "Now the talk time of round 2 starts. You have 20 tokens now. Please generate a list of short messages to send to one or some of ";
-            if (com_mode == "full") {
-                document.getElementById('Comm').innerText += " [player_1, player_2, player_3, player_4] in order to have the highest token count when the game concludes. You can choose not to speak to anyone if there is enough information. If you want to send the message to everyone, the 'receiver' field should be ['everyone']." +
-                    "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" + 
-                    "player_0 to everyone:\n" +
-                    "...\n";
-                if (com_cot) {
-                    document.getElementById('Comm').innerText += "Your thoughts when communication in Round 1:\n";
-                }
-                    document.getElementById('Comm').innerText += "You to everyone:\n" +
-                    "\nRound 2:\n" + "player_1 to You:\n";
-            } else if (com_mode == "partial") {
-                document.getElementById('Comm').innerText += " [player_0, player_3] in order to have the highest token count when the game concludes. As each player can only observe her own neighbors' contributions, it may be good to chat with others to get more contribution information out of the observation range. You can choose not to speak to anyone if there is enough information." +
-                "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" +
-                "player_0 to You:\n" +
-                "player_3 to You:\n";
-                if (com_cot) {
-                    document.getElementById('Comm').innerText += "Your thoughts when communication in Round 1:\n";
-                }
-                document.getElementById('Comm').innerText += "You to player_3:\n" +
-                "You to player_0:\n" +
-                "\nRound 2:\n" +
-                "player_0 to You:\n" +
-                "player_3 to You:\n";
+            
+            document.getElementById('System').appendChild(system1);
+            document.getElementById('System').appendChild(system2);
+            document.getElementById('System').appendChild(system3);
+            document.getElementById('System').appendChild(system4);
+            document.getElementById('System').appendChild(system5);
+            document.getElementById('System').appendChild(system6);
+            document.getElementById('System').appendChild(system7);
+            document.getElementById('System').appendChild(system8);
+
+            // Communication
+            comm1.innerText = "Now the talk time of round 2 starts. You have 20 tokens now. Please generate a list of short messages to send to one or some of ";
+            comm2.innerText = " [player_0, player_3] in order to have the highest token count when the game concludes. As each player can only observe her own neighbors' contributions, it may be good to chat with others to get more contribution information out of the observation range. You can choose not to speak to anyone if there is enough information." +
+            "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" +
+            "player_0 to You:\n" +
+            "player_3 to You:\n";
+            comm3.innerText = "";
+            comm4.innerText = "You to player_3:\n" +
+            "You to player_0:\n" +
+            "\nRound 2:\n" +
+            "player_0 to You:\n" +
+            "player_3 to You:\n";
+            comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
+                "Your thoughts when action in Round 1:\nGame Results for Round 1:" +
+                "\nContributed tokens of each player: {'player_3': 3, 'player_0': 10}\n" +
+                "You contributed:5\n" +
+                "Tokens in the public pot: 33\n" +
+                "Your gain: 8.2\n" +
+                "Your tokens after round 1: 28.2\n" +
+                "End of Game Results for Round 1\n";
+            comm6.innerText = "";
+            comm7.innerText = "\nResponse format:\n" +
+                "{'thoughts' : 'thoughts content', # think about the necessity of sending a message, as there are costs to send messages.\n" +
+                "'receiver' : list of receiver's name,\n" +
+                "'message' : list of message contents for each receiver # if the messages are the same for all receivers, you can just send one message.}" +
+                "\nPlease use double quotes for the keys and values.\n\nNote: If there is no new information, you do not need to send a message, please fill in 'receiver' and 'message' as a string 'None'. You do not have to be too polite so that we can save communication costs. ";
+            comm8.innerText = "";
+            comm9.innerText = "\n(Liars):\n";
+            comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions, as others know there is a liar."
+            comm11.innerText = "\n(Others):\n";
+            comm12.innerText = "You need to communicate to maximize your tokens and find out the liar to avoid free rides."
+
+            document.getElementById('Comm').appendChild(comm1);
+            document.getElementById('Comm').appendChild(comm2);
+            document.getElementById('Comm').appendChild(comm3);
+            document.getElementById('Comm').appendChild(comm4);
+            document.getElementById('Comm').appendChild(comm5);
+            document.getElementById('Comm').appendChild(comm6);
+            document.getElementById('Comm').appendChild(comm7);
+            document.getElementById('Comm').appendChild(comm8);
+            document.getElementById('Comm').appendChild(comm9);
+            document.getElementById('Comm').appendChild(comm10);
+            document.getElementById('Comm').appendChild(comm11);
+            document.getElementById('Comm').appendChild(comm12);
+
+            // <h4>Action</h4>;
+            act1.innerText = "Now round 2 starts." +
+                "Your goal is to maximize your total token count by the end of the game. Currently you have 20 tokens. You need to decide the number of tokens to be contributed to the public pot.\n" +
+                "\nDialogue history: ..." +
+                "\nAction history: ...";
+            act2.innerText = "";
+            act3.innerText = "\n\nLet\'s think step by step. Please provide your thinking process and the number of tokens in the following JSON format: {'thoughts': 'thinking_process', 'tokens_contributed': 'integer_between_0_and_20'}. Please use double quotes for the keys and values.";
+            act4.innerText = "";
+            
+            document.getElementById('Action').appendChild(act1);
+            document.getElementById('Action').appendChild(act2);
+            document.getElementById('Action').appendChild(act3);
+            document.getElementById('Action').appendChild(act4);
+        }
+        function updatePGG() {
+            obs_mode = document.getElementById('obs_mode').value;
+            com_mode = document.getElementById('com_mode').value;
+            if_liars_are_informed = document.getElementById('if liars are informed').value;
+            if_others_are_informed = document.getElementById('if others are informed').value;
+            com_cot = document.getElementById('com_cot').checked;
+            reputation = document.getElementById('reputation').checked;
+            
+            if (if_liars_are_informed == "yes") {
+                system2.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
+                comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions, as others know there is a liar."
+            } else {
+                system2.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
+                comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions."
+            }
+            if (if_others_are_informed == "yes") {
+                system4.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
+                comm12.innerText = "You need to communicate to maximize your tokens and find out the liar to avoid free rides."
+            } else {
+                system4.innerText = "(No text here)\n";
+                comm12.innerText = "You need to communicate to maximize your tokens."
             }
             if (obs_mode == "full") {
-                document.getElementById('Comm').innerText += "\nAction history:\n" + "Last 1 rounds:\n" +
+                system6.innerText = " all players.";
+                comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" +
                     "Your thoughts when action in Round 1: \n\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {'player_0': 7, 'player_1': 5, 'player_2': 5, 'player_3': 5, 'player_4': 3}\n" +
                     "You contributed:3\n" +
@@ -188,7 +290,8 @@
                     "Your tokens after round 1: 27.0\n" +
                     "End of Game Results for Round 1\n";
             } else if (obs_mode == "partial") {
-                document.getElementById('Comm').innerText += "\nAction history:\n" + "Last 1 rounds:\n" + 
+                system6.innerText = " part of players.";
+                comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
                     "Your thoughts when action in Round 1:\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {'player_3': 3, 'player_0': 10}\n" +
                     "You contributed:5\n" +
@@ -197,7 +300,8 @@
                     "Your tokens after round 1: 28.2\n" +
                     "End of Game Results for Round 1\n";
             } else {
-                document.getElementById('Comm').innerText += "\nAction history:\n" + "Last 1 rounds:\n" + 
+                system6.innerText = " none of players.";
+                comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
                     "Your thoughts when action in Round 1:\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {}\n" +
                     "Tokens in the public pot: 42\n" +
@@ -206,41 +310,133 @@
                     "Your tokens after round 1: 32.8\n" +
                     "End of Game Results for Round 1\n";
             }
-            if (reputation) {
-                document.getElementById('Comm').innerText += "\nReputation history:\nRound 1: ['player_1', 'player_3', 'player_0', 'player_2', 'player_4']\nIn the last round, your rank is 5. Note that there is an independent rater outside the players who ranks all players' reputation in the descending order, based on your communication and contribution. You should try to maintain a good reputation when pursuing more tokens.\n";
-            }
-            document.getElementById('Comm').innerText += "\nResponse format:\n" +
-                "{'thoughts' : 'thoughts content', # think about the necessity of sending a message, as there are costs to send messages.\n" +
-                "'receiver' : list of receiver's name,\n" +
-                "'message' : list of message contents for each receiver # if the messages are the same for all receivers, you can just send one message.}";
-            document.getElementById('Comm').innerText += "\nPlease use double quotes for the keys and values.\n\nNote: If there is no new information, you do not need to send a message, please fill in 'receiver' and 'message' as a string 'None'. You do not have to be too polite so that we can save communication costs. ";
-            if (reputation) {
-                document.getElementById('Comm').innerText += "You should try to maintain a good reputation when pursuing more tokens. So pay attention to what you say and what you contribute."
-            }
-            document.getElementById('Comm').innerText += "\n(Liars):\n";
-            if (if_liars_are_informed) {
-                document.getElementById('Comm').innerText += "You need to encourage others to contribute more while telling lies to cover up your lower contributions, as others know there is a liar."
+            if (com_mode == "full") {
+                system7.innerText = " You can communicate with all players.\n";
+                comm2.innerText = " [player_1, player_2, player_3, player_4] in order to have the highest token count when the game concludes. You can choose not to speak to anyone if there is enough information. If you want to send the message to everyone, the 'receiver' field should be ['everyone']." +
+                    "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" + 
+                    "player_0 to everyone:\n" +
+                    "...\n";
+                comm4.innerText = "You to everyone:\n" + "\nRound 2:\n" + "player_1 to You:\n";
+            } else if (com_mode == "partial") {
+                system7.innerText = " You can communicate with part of players.\n";
+                comm2.innerText = " [player_0, player_3] in order to have the highest token count when the game concludes. As each player can only observe her own neighbors' contributions, it may be good to chat with others to get more contribution information out of the observation range. You can choose not to speak to anyone if there is enough information." +
+                "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" +
+                "player_0 to You:\n" +
+                "player_3 to You:\n";
+                comm4.innerText = "You to player_3:\n" +
+                "You to player_0:\n" +
+                "\nRound 2:\n" +
+                "player_0 to You:\n" +
+                "player_3 to You:\n";
             } else {
-                document.getElementById('Comm').innerText += "You need to encourage others to contribute more while telling lies to cover up your lower contributions."
+                system7.innerText = " You cannot communicate with any player.\n";
             }
-            document.getElementById('Comm').innerText += "\n(Others):\n";
-            if (if_others_are_informed) {
-                document.getElementById('Comm').innerText += "You need to communicate to maximize your tokens and find out the liar to avoid free rides."
+            if (com_cot) {
+                comm3.innerText = "Your thoughts when communication in Round 1:\n";
             } else {
-                document.getElementById('Comm').innerText += "You need to communicate to maximize your tokens."
+                comm3.innerText = "(No text here)\n";
             }
-            // <h4>Action</h4>;
-            document.getElementById('Action').innerText = "Now round 2 starts." +
-                "Your goal is to maximize your total token count by the end of the game. Currently you have 20 tokens. You need to decide the number of tokens to be contributed to the public pot.\n" +
-                "\nDialogue history: ..." +
-                "\nAction history: ...";
-                if (reputation) {
-                    document.getElementById('Action').innerText += "\nReputation history: ...";
-                }
-                document.getElementById('Action').innerText += "\n\nLet\'s think step by step. Please provide your thinking process and the number of tokens in the following JSON format: {'thoughts': 'thinking_process', 'tokens_contributed': 'integer_between_0_and_20'}. Please use double quotes for the keys and values.";
-                if (reputation) {
-                    document.getElementById('Action').innerText += " You should try to maintain a good reputation when pursuing more tokens. So pay attention to what you say and what you contribute.";
-                }
+            if (reputation) {
+                comm6.innerText = "\nReputation history:\nRound 1: ['player_1', 'player_3', 'player_0', 'player_2', 'player_4']\nIn the last round, your rank is 5. Note that there is an independent rater outside the players who ranks all players' reputation in the descending order, based on your communication and contribution. You should try to maintain a good reputation when pursuing more tokens.\n";
+                comm8.innerText = "You should try to maintain a good reputation when pursuing more tokens. So pay attention to what you say and what you contribute."
+                act2.innerText = "\nReputation history: ...";
+                act4.innerText = " You should try to maintain a good reputation when pursuing more tokens. So pay attention to what you say and what you contribute.";
+            } else {
+                comm6.innerText = "(No text here)\n";
+                comm8.innerText = "(No text here)\n";
+                act2.innerText = "(No text here)\n";
+                act4.innerText = "(No text here)\n";
+            }
+
+            // System
+            while (document.getElementById('System').firstChild) {
+                document.getElementById('System').removeChild(document.getElementById('System').firstChild);
+            }
+            system2.style.backgroundColor = "";
+            system4.style.backgroundColor = "";
+            system6.style.backgroundColor = "";
+            system7.style.backgroundColor = "";
+
+            // Communication
+            while (document.getElementById('Comm').firstChild) {
+                document.getElementById('Comm').removeChild(document.getElementById('Comm').firstChild);
+            }
+            comm2.style.backgroundColor = "";
+            comm3.style.backgroundColor = "";
+            comm4.style.backgroundColor = "";
+            comm5.style.backgroundColor = "";
+            comm6.style.backgroundColor = "";
+            comm8.style.backgroundColor = "";
+            comm10.style.backgroundColor = "";
+            comm12.style.backgroundColor = "";
+
+            // Action
+            while (document.getElementById('Action').firstChild) {
+                document.getElementById('Action').removeChild(document.getElementById('Action').firstChild);
+            }
+            act2.style.backgroundColor = "";
+            act4.style.backgroundColor = "";
+
+            if (if_liars_are_informed != old_if_liars_are_informed) {
+                system2.style.backgroundColor = "yellow";
+                comm10.style.backgroundColor = "yellow";
+            }
+            if (if_others_are_informed != old_if_others_are_informed) {
+                system4.style.backgroundColor = "yellow";
+                comm12.style.backgroundColor = "yellow";
+            }
+            if (obs_mode != old_obs_mode) {
+                system6.style.backgroundColor = "yellow";
+                comm5.style.backgroundColor = "yellow";
+            }
+            if (com_mode != old_com_mode) {
+                system7.style.backgroundColor = "yellow";
+                comm2.style.backgroundColor = "yellow";
+                comm4.style.backgroundColor = "yellow";
+            }
+            if (com_cot != old_com_cot) {
+                comm3.style.backgroundColor = "yellow";
+            }
+            if (reputation != old_reputation) {
+                comm6.style.backgroundColor = "yellow";
+                comm8.style.backgroundColor = "yellow";
+                act2.style.backgroundColor = "yellow";
+                act4.style.backgroundColor = "yellow";
+            }
+            
+            document.getElementById('System').appendChild(system1);
+            document.getElementById('System').appendChild(system2);
+            document.getElementById('System').appendChild(system3);
+            document.getElementById('System').appendChild(system4);
+            document.getElementById('System').appendChild(system5);
+            document.getElementById('System').appendChild(system6);
+            document.getElementById('System').appendChild(system7);
+            document.getElementById('System').appendChild(system8);
+            
+            document.getElementById('Comm').appendChild(comm1);
+            document.getElementById('Comm').appendChild(comm2);
+            document.getElementById('Comm').appendChild(comm3);
+            document.getElementById('Comm').appendChild(comm4);
+            document.getElementById('Comm').appendChild(comm5);
+            document.getElementById('Comm').appendChild(comm6);
+            document.getElementById('Comm').appendChild(comm7);
+            document.getElementById('Comm').appendChild(comm8);
+            document.getElementById('Comm').appendChild(comm9);
+            document.getElementById('Comm').appendChild(comm10);
+            document.getElementById('Comm').appendChild(comm11);
+            document.getElementById('Comm').appendChild(comm12);
+
+            document.getElementById('Action').appendChild(act1);
+            document.getElementById('Action').appendChild(act2);
+            document.getElementById('Action').appendChild(act3);
+            document.getElementById('Action').appendChild(act4);
+
+            old_obs_mode = obs_mode;
+            old_com_mode = com_mode;
+            old_if_liars_are_informed = if_liars_are_informed;
+            old_if_others_are_informed = if_others_are_informed;
+            old_com_cot = com_cot;
+            old_reputation = reputation;
         }
     </script>
 </body>
