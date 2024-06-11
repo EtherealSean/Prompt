@@ -31,6 +31,7 @@
             <select id="com_mode" name="com_mode">
                 <option value="partial">Partial (Two neighbors)</option>
                 <option value="full">Full</option>
+                <option value="0">Non (Please omit communication)</option>
             </select><br>
                 
             <label for="if liars are informed">If Liars are Informed that others know there are liars:</label><br>
@@ -112,6 +113,8 @@
             <p id="Comm"></p>
             <h2>Action</h2>
             <p id="Action"></p>
+            <h2 id="Rater_header"></h2>
+            <p id="Rater_text"></p>
         </div>
     </div>
 
@@ -154,6 +157,12 @@
         var system6 = document.createElement('span');
         var system7 = document.createElement('span');
         var system8 = document.createElement('span');
+        var system9 = document.createElement('span');
+        var system10 = document.createElement('span');
+        var system11 = document.createElement('span');
+        var system12 = document.createElement('span');
+        var system13 = document.createElement('span');
+        var system14 = document.createElement('span');
 
         var comm1 = document.createElement('span');
         var comm2 = document.createElement('span');
@@ -175,14 +184,20 @@
 
         window.onload = function() {
             // System
-            system1.innerText = "You are player_4.\n(Liars):\n";
-            system2.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
-            system3.innerText = "\n(Others):\n";
-            system4.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
-            system5.innerText = "\n\nYou are participating in a game played by 5 players over 10 rounds. You can see the contribution results of";
-            system6.innerText = " part of players.";
-            system7.innerText = " You can communicate with part of players.\n";
-            system8.innerText = "\nGame Rules:\n" + 
+            system1.innerText = "You are participating in a game played by 5 players over 10 rounds.";
+            system2.innerText = "You are player_4.\n(Liars):\n";
+            system3.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
+            system4.innerText = "\n(Others):\n";
+            system5.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
+            system6.innerText = "\nYou can see the contribution results of ";
+            system7.innerText = "2 neighbors";
+            system8.innerText = ", and the observabilities of other players are the same with you. Specifically, you can see the contribution results of "
+            system9.innerText = "[player_0, player_3]";
+            system10.innerText = " other than yourself.\nYou can communicate with "
+            system11.innerText = "2 neighbors"
+            system12.innerText = ", and the communication ranges of other players are the same with you. Specifically, you can communicate with "
+            system13.innerText = "[player_0, player_3].";
+            system14.innerText = "\nGame Rules:\n" + 
                 "1. In each round, you, as a player, must decide how many of your private tokens you wish to contribute secretly to the public pot.\n" +
                 "2. The total tokens in this pot will be multiplied by the factor 2 to create the 'public good' payoff.\n" +
                 "3. This payoff will then be evenly divided among all players, regardless of their individual contribution.\n" +
@@ -197,21 +212,27 @@
             document.getElementById('System').appendChild(system6);
             document.getElementById('System').appendChild(system7);
             document.getElementById('System').appendChild(system8);
+            document.getElementById('System').appendChild(system9);
+            document.getElementById('System').appendChild(system10);
+            document.getElementById('System').appendChild(system11);
+            document.getElementById('System').appendChild(system12);
+            document.getElementById('System').appendChild(system13);
+            document.getElementById('System').appendChild(system14);
 
             // Communication
             comm1.innerText = "Now the talk time of round 2 starts. You have 20 tokens now. Please generate a list of short messages to send to one or some of ";
             comm2.innerText = " [player_0, player_3] in order to have the highest token count when the game concludes. As each player can only observe her own neighbors' contributions, it may be good to chat with others to get more contribution information out of the observation range. You can choose not to speak to anyone if there is enough information." +
             "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" +
-            "player_0 to You:\n" +
-            "player_3 to You:\n";
+            "player_0 to You:...\n" +
+            "player_3 to You:...\n";
             comm3.innerText = "";
-            comm4.innerText = "You to player_3:\n" +
-            "You to player_0:\n" +
+            comm4.innerText = "You to player_3:...\n" +
+            "You to player_0:...\n" +
             "\nRound 2:\n" +
-            "player_0 to You:\n" +
-            "player_3 to You:\n";
+            "player_0 to You:...\n" +
+            "player_3 to You:...\n";
             comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
-                "Your thoughts when action in Round 1:\nGame Results for Round 1:" +
+                "Your thoughts when action in Round 1:...\n\nGame Results for Round 1:" +
                 "\nContributed tokens of each player: {'player_3': 3, 'player_0': 10}\n" +
                 "You contributed:5\n" +
                 "Tokens in the public pot: 33\n" +
@@ -256,6 +277,10 @@
             document.getElementById('Action').appendChild(act2);
             document.getElementById('Action').appendChild(act3);
             document.getElementById('Action').appendChild(act4);
+
+            // Rater
+            document.getElementById('Rater_header').innerText = "";
+            document.getElementById('Rater_text').innerText = "";
         }
         function updatePGG() {
             obs_mode = document.getElementById('obs_mode').value;
@@ -266,23 +291,24 @@
             reputation = document.getElementById('reputation').checked;
             
             if (if_liars_are_informed == "yes") {
-                system2.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
+                system3.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
                 comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions, as others know there is a liar."
             } else {
-                system2.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
+                system3.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
                 comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions."
             }
             if (if_others_are_informed == "yes") {
-                system4.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
+                system5.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
                 comm12.innerText = "You need to communicate to maximize your tokens and find out the liar to avoid free rides."
             } else {
-                system4.innerText = "(No text here)\n";
+                system5.innerText = "(No text here)\n";
                 comm12.innerText = "You need to communicate to maximize your tokens."
             }
             if (obs_mode == "full") {
-                system6.innerText = " all players.";
+                system7.innerText = "all players";
+                system9.innerText = "[player_0, player_1, player_2, player_3]";
                 comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" +
-                    "Your thoughts when action in Round 1: \n\nGame Results for Round 1:" +
+                    "Your thoughts when action in Round 1:...\n\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {'player_0': 7, 'player_1': 5, 'player_2': 5, 'player_3': 5, 'player_4': 3}\n" +
                     "You contributed:3\n" +
                     "Tokens in the public pot: 25\n" +
@@ -290,9 +316,10 @@
                     "Your tokens after round 1: 27.0\n" +
                     "End of Game Results for Round 1\n";
             } else if (obs_mode == "partial") {
-                system6.innerText = " part of players.";
+                system7.innerText = "2 neighbors";
+                system9.innerText = "[player_0, player_3]";
                 comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
-                    "Your thoughts when action in Round 1:\nGame Results for Round 1:" +
+                    "Your thoughts when action in Round 1:...\n\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {'player_3': 3, 'player_0': 10}\n" +
                     "You contributed:5\n" +
                     "Tokens in the public pot: 33\n" +
@@ -300,9 +327,10 @@
                     "Your tokens after round 1: 28.2\n" +
                     "End of Game Results for Round 1\n";
             } else {
-                system6.innerText = " none of players.";
+                system7.innerText = "none of other players";
+                system9.innerText = "[]";
                 comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
-                    "Your thoughts when action in Round 1:\nGame Results for Round 1:" +
+                    "Your thoughts when action in Round 1:...\n\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {}\n" +
                     "Tokens in the public pot: 42\n" +
                     "You contributed:4\n" +
@@ -311,25 +339,28 @@
                     "End of Game Results for Round 1\n";
             }
             if (com_mode == "full") {
-                system7.innerText = " You can communicate with all players.\n";
-                comm2.innerText = " [player_1, player_2, player_3, player_4] in order to have the highest token count when the game concludes. You can choose not to speak to anyone if there is enough information. If you want to send the message to everyone, the 'receiver' field should be ['everyone']." +
-                    "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" + 
-                    "player_0 to everyone:\n" +
+                system11.innerText = "all of other players";
+                system13.innerText = "[player_0, player_1, player_2, player_3]";
+                comm2.innerText = " [player_0, player_1, player_2, player_3] in order to have the highest token count when the game concludes. You can choose not to speak to anyone if there is enough information. If you want to send the message to everyone, the 'receiver' field should be ['everyone']." +
+                    "\n\nDialogue history:...\nLast 1 rounds and the current round:\n\nRound 1:\n" + 
+                    "player_0 to everyone:...\n" +
                     "...\n";
-                comm4.innerText = "You to everyone:\n" + "\nRound 2:\n" + "player_1 to You:\n";
+                comm4.innerText = "You to everyone:...\n" + "\nRound 2:\n" + "player_1 to You:...\n";
             } else if (com_mode == "partial") {
-                system7.innerText = " You can communicate with part of players.\n";
+                system11.innerText = "2 neighbors";
+                system13.innerText = "[player_0, player_3]";
                 comm2.innerText = " [player_0, player_3] in order to have the highest token count when the game concludes. As each player can only observe her own neighbors' contributions, it may be good to chat with others to get more contribution information out of the observation range. You can choose not to speak to anyone if there is enough information." +
                 "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" +
-                "player_0 to You:\n" +
-                "player_3 to You:\n";
-                comm4.innerText = "You to player_3:\n" +
-                "You to player_0:\n" +
+                "player_0 to You:...\n" +
+                "player_3 to You:...\n";
+                comm4.innerText = "You to player_3:...\n" +
+                "You to player_0:...\n" +
                 "\nRound 2:\n" +
-                "player_0 to You:\n" +
-                "player_3 to You:\n";
+                "player_0 to You:...\n" +
+                "player_3 to You:...\n";
             } else {
-                system7.innerText = " You cannot communicate with any player.\n";
+                system11.innerText = "none of other players";
+                system13.innerText = "[]";
             }
             if (com_cot) {
                 comm3.innerText = "Your thoughts when communication in Round 1:\n";
@@ -341,6 +372,24 @@
                 comm8.innerText = "You should try to maintain a good reputation when pursuing more tokens. So pay attention to what you say and what you contribute."
                 act2.innerText = "\nReputation history: ...";
                 act4.innerText = " You should try to maintain a good reputation when pursuing more tokens. So pay attention to what you say and what you contribute.";
+                document.getElementById('Rater_header').innerText = "Reputation Rater";
+                document.getElementById('Rater_header').style.backgroundColor = "yellow";
+                document.getElementById('Rater_text').innerText = "System:\n" +
+                    "You are participating in a game played by 5 players over 10 rounds.\n\n" +
+                    "You are a rater for a cooperative game. You can rank all the players' reputations based on their contributions to public goods and honesty to cooperate with others. You can see the communication and contribution history of all players. Players will receive the reputation rank.\n\n" +
+                    "Game Rules for the Players:...\n\n" +
+                    "User:\n" +
+                    "Now Round 5 ends. You need to decide the reputation rank for all players. Please generate a list ranking all players in descending order of reputation, i.e., the player with the highest reputation should be ranked first. If two players have the same reputation, you can rank them in any order.\n\n" +
+                    "Your ranking for each round:\n" +
+                    "Round 1: ['player_0', 'player_2', 'player_1', 'player_3', 'player_4']\n" +
+                    "Round 2: ['player_2', 'player_1', 'player_4', 'player_0', 'player_3']\n" +
+                    "Round 3: ['player_2', 'player_3', 'player_4', 'player_0', 'player_1']\n" +
+                    "Round 4: ['player_2', 'player_3', 'player_4', 'player_0', 'player_1']\n\n" +
+                    "Dialogue history:...\n\n" +
+                    "Action history:...\n\n" +
+                    "Let's think step by step. Please provide your thinking process and the number of tokens in the following JSON format: {'thoughts': 'thinking_process', 'rank': 'a_list_ranking_all_players_in_this_round' # each element in the list should be in ['player_0', 'player_1', 'player_2', 'player_3', 'player_4']}. Please use double quotes for the keys and values.\n\n" +
+                    "Note: You should get information from the players' dialogue and contribution history, and your own thoughts in the previous rounds. You could decide the reputation of a player based on the consistency of her words and actions, and the consistency of her behavior across the multiple rounds. Your ranking may have a great impact on the final payment, please be careful and reasonable.";
+
             } else {
                 comm6.innerText = "(No text here)\n";
                 comm8.innerText = "(No text here)\n";
@@ -378,19 +427,21 @@
             act4.style.backgroundColor = "";
 
             if (if_liars_are_informed != old_if_liars_are_informed) {
-                system2.style.backgroundColor = "yellow";
+                system3.style.backgroundColor = "yellow";
                 comm10.style.backgroundColor = "yellow";
             }
             if (if_others_are_informed != old_if_others_are_informed) {
-                system4.style.backgroundColor = "yellow";
+                system5.style.backgroundColor = "yellow";
                 comm12.style.backgroundColor = "yellow";
             }
             if (obs_mode != old_obs_mode) {
-                system6.style.backgroundColor = "yellow";
+                system7.style.backgroundColor = "yellow";
+                system9.style.backgroundColor = "yellow";
                 comm5.style.backgroundColor = "yellow";
             }
             if (com_mode != old_com_mode) {
-                system7.style.backgroundColor = "yellow";
+                system11.style.backgroundColor = "yellow";
+                system13.style.backgroundColor = "yellow";
                 comm2.style.backgroundColor = "yellow";
                 comm4.style.backgroundColor = "yellow";
             }
@@ -412,6 +463,12 @@
             document.getElementById('System').appendChild(system6);
             document.getElementById('System').appendChild(system7);
             document.getElementById('System').appendChild(system8);
+            document.getElementById('System').appendChild(system9);
+            document.getElementById('System').appendChild(system10);
+            document.getElementById('System').appendChild(system11);
+            document.getElementById('System').appendChild(system12);
+            document.getElementById('System').appendChild(system13);
+            document.getElementById('System').appendChild(system14);
             
             document.getElementById('Comm').appendChild(comm1);
             document.getElementById('Comm').appendChild(comm2);
