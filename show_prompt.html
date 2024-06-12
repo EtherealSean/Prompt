@@ -33,15 +33,21 @@
                 <option value="full">Full</option>
                 <option value="0">Non (Please omit communication)</option>
             </select><br>
+
+            <label for="if others are informed">If Others know that there are liars</label><br>
+            <select id="if others are informed" name="if others are informed">
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+            </select><br>
                 
-            <label for="if liars are informed">If Liars are Informed that others know there are liars:</label><br>
+            <label for="if liars are informed">If Liars know that others are informed:</label><br>
             <select id="if liars are informed" name="if liars are informed">
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
             </select><br>
 
-            <label for="if others are informed">If Others are Informed that there are liars</label><br>
-            <select id="if others are informed" name="if others are informed">
+            <label for="if others are informed 2">If Others know that liars are informed:</label><br>
+            <select id="if others are informed 2" name="if others are informed 2">
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
             </select><br>
@@ -137,15 +143,17 @@
     <script>
         var obs_mode = document.getElementById('obs_mode').value;
         var com_mode = document.getElementById('com_mode').value;
-        var if_liars_are_informed = document.getElementById('if liars are informed').value;
         var if_others_are_informed = document.getElementById('if others are informed').value;
+        var if_liars_are_informed = document.getElementById('if liars are informed').value;
+        var if_others_are_informed_2 = document.getElementById('if others are informed 2').value;
         var com_cot = document.getElementById('com_cot').checked;
         var reputation = document.getElementById('reputation').checked;
 
         var old_obs_mode = obs_mode;
         var old_com_mode = com_mode;
-        var old_if_liars_are_informed = if_liars_are_informed;
         var old_if_others_are_informed = if_others_are_informed;
+        var old_if_liars_are_informed = if_liars_are_informed;
+        var old_if_others_are_informed_2 = if_others_are_informed_2;
         var old_com_cot = com_cot;
         var old_reputation = reputation;
 
@@ -163,6 +171,9 @@
         var system12 = document.createElement('span');
         var system13 = document.createElement('span');
         var system14 = document.createElement('span');
+        var system15 = document.createElement('span');
+        var system16 = document.createElement('span');
+        var system17 = document.createElement('span');
 
         var comm1 = document.createElement('span');
         var comm2 = document.createElement('span');
@@ -186,18 +197,21 @@
             // System
             system1.innerText = "You are participating in a game played by 5 players over 10 rounds.";
             system2.innerText = "You are player_4.\n(Liars):\n";
-            system3.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
-            system4.innerText = "\n(Others):\n";
-            system5.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
-            system6.innerText = "\nYou can see the contribution results of ";
-            system7.innerText = "2 neighbors";
-            system8.innerText = ", and the observabilities of other players are the same with you. Specifically, you can see the contribution results of "
-            system9.innerText = "[player_0, player_3]";
-            system10.innerText = " other than yourself.\nYou can communicate with "
-            system11.innerText = "2 neighbors"
-            system12.innerText = ", and the communication ranges of other players are the same with you. Specifically, you can communicate with "
-            system13.innerText = "[player_0, player_3].";
-            system14.innerText = "\nGame Rules:\n" + 
+            system3.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides. "
+            system4.innerText = "Others know that there is a liar so you have to hide yourself."
+            system5.innerText = " You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
+            system6.innerText = "\n(Others):\n";
+            system7.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others."
+            system8.innerText = " Besides, the liar know that you are informed about the liar, so she may try to mislead you. Be careful.";
+            system9.innerText = "\nYou can see the contribution results of ";
+            system10.innerText = "2 neighbors";
+            system11.innerText = ", and the observabilities of other players are the same with you. "
+            system12.innerText = "Specifically, you can see the contribution results of [player_0, player_3] other than yourself.";
+            system13.innerText = "\nYou can communicate with "
+            system14.innerText = "2 neighbors"
+            system15.innerText = ", and the communication ranges of other players are the same with you. Specifically, you can communicate with "
+            system16.innerText = "[player_0, player_3].";
+            system17.innerText = "\nGame Rules:\n" + 
                 "1. In each round, you, as a player, must decide how many of your private tokens you wish to contribute secretly to the public pot.\n" +
                 "2. The total tokens in this pot will be multiplied by the factor 2 to create the 'public good' payoff.\n" +
                 "3. This payoff will then be evenly divided among all players, regardless of their individual contribution.\n" +
@@ -218,6 +232,9 @@
             document.getElementById('System').appendChild(system12);
             document.getElementById('System').appendChild(system13);
             document.getElementById('System').appendChild(system14);
+            document.getElementById('System').appendChild(system15);
+            document.getElementById('System').appendChild(system16);
+            document.getElementById('System').appendChild(system17);
 
             // Communication
             comm1.innerText = "Now the talk time of round 2 starts. You have 20 tokens now. Please generate a list of short messages to send to one or some of ";
@@ -287,26 +304,73 @@
             com_mode = document.getElementById('com_mode').value;
             if_liars_are_informed = document.getElementById('if liars are informed').value;
             if_others_are_informed = document.getElementById('if others are informed').value;
+            if_others_are_informed_2 = document.getElementById('if others are informed 2').value;
             com_cot = document.getElementById('com_cot').checked;
             reputation = document.getElementById('reputation').checked;
             
-            if (if_liars_are_informed == "yes") {
-                system3.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides, but others know that there is a liar so you have to hide yourself. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
-                comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions, as others know there is a liar."
-            } else {
-                system3.innerText = "Actually, you are a liar to tell lies to gain more benefits by free rides. You need to encourage others to contribute more while telling lies to cover up your lower contributions. Your goal is to take as much free ride as you can.";
-                comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions."
+            // System
+            while (document.getElementById('System').firstChild) {
+                document.getElementById('System').removeChild(document.getElementById('System').firstChild);
             }
+            system4.style.backgroundColor = "";
+            system7.style.backgroundColor = "";
+            system8.style.backgroundColor = "";
+            system10.style.backgroundColor = "";
+            system12.style.backgroundColor = "";
+            system14.style.backgroundColor = "";
+            system16.style.backgroundColor = "";
+
+            // Communication
+            while (document.getElementById('Comm').firstChild) {
+                document.getElementById('Comm').removeChild(document.getElementById('Comm').firstChild);
+            }
+            comm2.style.backgroundColor = "";
+            comm3.style.backgroundColor = "";
+            comm4.style.backgroundColor = "";
+            comm5.style.backgroundColor = "";
+            comm6.style.backgroundColor = "";
+            comm8.style.backgroundColor = "";
+            comm10.style.backgroundColor = "";
+            comm12.style.backgroundColor = "";
+
+            // Action
+            while (document.getElementById('Action').firstChild) {
+                document.getElementById('Action').removeChild(document.getElementById('Action').firstChild);
+            }
+            act2.style.backgroundColor = "";
+            act4.style.backgroundColor = "";
+
             if (if_others_are_informed == "yes") {
-                system5.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
+                system7.innerText = "Actually, there is a liar so you have to be careful of others' messages. She may tell lies to mislead other players to contribute more so that she can take a free ride. Once the liar is found, do not trust her and notify others.";
+                if (if_others_are_informed_2 == "yes") {
+                    if (if_liars_are_informed == "yes") {
+                        system8.innerText = " Besides, the liar know that you are informed about the liar, so she may try to mislead you. Be careful.";
+                    } else {
+                        system8.innerText = " Besides, the liar doesn't know that you are informed about the liar.";
+                    }
+                } else {
+                    system8.innerText = "(No text here)\n";
+                }
                 comm12.innerText = "You need to communicate to maximize your tokens and find out the liar to avoid free rides."
             } else {
-                system5.innerText = "(No text here)\n";
+                system7.innerText = "(No text here)\n";
+                system8.innerText = "(No text here)\n";
                 comm12.innerText = "You need to communicate to maximize your tokens."
             }
+            if (if_liars_are_informed == "yes") {
+                if (if_others_are_informed == "yes") {
+                    system4.innerText = "Others know that there is a liar so you have to hide yourself.";
+                } else {
+                    system4.innerText = "Others don't know that there is a liar so you have to hide yourself.";
+                }
+                comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions, as others know there is a liar."
+            } else {
+                system4.innerText = "(No text here)\n";
+                comm10.innerText = "You need to encourage others to contribute more while telling lies to cover up your lower contributions."
+            }
             if (obs_mode == "full") {
-                system7.innerText = "all players";
-                system9.innerText = "[player_0, player_1, player_2, player_3]";
+                system10.innerText = "all players";
+                system12.innerText = "Specifically, you can see the contribution results of [player_0, player_1, player_2, player_3] other than yourself.";
                 comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" +
                     "Your thoughts when action in Round 1:...\n\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {'player_0': 7, 'player_1': 5, 'player_2': 5, 'player_3': 5, 'player_4': 3}\n" +
@@ -316,8 +380,8 @@
                     "Your tokens after round 1: 27.0\n" +
                     "End of Game Results for Round 1\n";
             } else if (obs_mode == "partial") {
-                system7.innerText = "2 neighbors";
-                system9.innerText = "[player_0, player_3]";
+                system10.innerText = "2 neighbors";
+                system12.innerText = "Specifically, you can see the contribution results of [player_0, player_3] other than yourself.";
                 comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
                     "Your thoughts when action in Round 1:...\n\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {'player_3': 3, 'player_0': 10}\n" +
@@ -327,8 +391,8 @@
                     "Your tokens after round 1: 28.2\n" +
                     "End of Game Results for Round 1\n";
             } else {
-                system7.innerText = "none of other players";
-                system9.innerText = "[]";
+                system10.innerText = "none of other players";
+                system12.innerText = "";
                 comm5.innerText = "\nAction history:\n" + "Last 1 rounds:\n" + 
                     "Your thoughts when action in Round 1:...\n\nGame Results for Round 1:" +
                     "\nContributed tokens of each player: {}\n" +
@@ -339,16 +403,16 @@
                     "End of Game Results for Round 1\n";
             }
             if (com_mode == "full") {
-                system11.innerText = "all of other players";
-                system13.innerText = "[player_0, player_1, player_2, player_3]";
+                system14.innerText = "all of other players";
+                system16.innerText = "[player_0, player_1, player_2, player_3]";
                 comm2.innerText = " [player_0, player_1, player_2, player_3] in order to have the highest token count when the game concludes. You can choose not to speak to anyone if there is enough information. If you want to send the message to everyone, the 'receiver' field should be ['everyone']." +
                     "\n\nDialogue history:...\nLast 1 rounds and the current round:\n\nRound 1:\n" + 
                     "player_0 to everyone:...\n" +
                     "...\n";
                 comm4.innerText = "You to everyone:...\n" + "\nRound 2:\n" + "player_1 to You:...\n";
             } else if (com_mode == "partial") {
-                system11.innerText = "2 neighbors";
-                system13.innerText = "[player_0, player_3]";
+                system14.innerText = "2 neighbors";
+                system16.innerText = "[player_0, player_3]";
                 comm2.innerText = " [player_0, player_3] in order to have the highest token count when the game concludes. As each player can only observe her own neighbors' contributions, it may be good to chat with others to get more contribution information out of the observation range. You can choose not to speak to anyone if there is enough information." +
                 "\n\nDialogue history:\nLast 1 rounds and the current round:\n\nRound 1:\n" +
                 "player_0 to You:...\n" +
@@ -359,8 +423,8 @@
                 "player_0 to You:...\n" +
                 "player_3 to You:...\n";
             } else {
-                system11.innerText = "none of other players";
-                system13.innerText = "[]";
+                system14.innerText = "none of other players";
+                system16.innerText = "[]";
             }
             if (com_cot) {
                 comm3.innerText = "Your thoughts when communication in Round 1:\n";
@@ -396,52 +460,28 @@
                 act2.innerText = "(No text here)\n";
                 act4.innerText = "(No text here)\n";
             }
-
-            // System
-            while (document.getElementById('System').firstChild) {
-                document.getElementById('System').removeChild(document.getElementById('System').firstChild);
-            }
-            system2.style.backgroundColor = "";
-            system4.style.backgroundColor = "";
-            system6.style.backgroundColor = "";
-            system7.style.backgroundColor = "";
-
-            // Communication
-            while (document.getElementById('Comm').firstChild) {
-                document.getElementById('Comm').removeChild(document.getElementById('Comm').firstChild);
-            }
-            comm2.style.backgroundColor = "";
-            comm3.style.backgroundColor = "";
-            comm4.style.backgroundColor = "";
-            comm5.style.backgroundColor = "";
-            comm6.style.backgroundColor = "";
-            comm8.style.backgroundColor = "";
-            comm10.style.backgroundColor = "";
-            comm12.style.backgroundColor = "";
-
-            // Action
-            while (document.getElementById('Action').firstChild) {
-                document.getElementById('Action').removeChild(document.getElementById('Action').firstChild);
-            }
-            act2.style.backgroundColor = "";
-            act4.style.backgroundColor = "";
-
             if (if_liars_are_informed != old_if_liars_are_informed) {
-                system3.style.backgroundColor = "yellow";
+                system4.style.backgroundColor = "yellow";
+                system8.style.backgroundColor = "yellow";
                 comm10.style.backgroundColor = "yellow";
             }
             if (if_others_are_informed != old_if_others_are_informed) {
-                system5.style.backgroundColor = "yellow";
+                system4.style.backgroundColor = "yellow";
+                system7.style.backgroundColor = "yellow";
+                system8.style.backgroundColor = "yellow";
                 comm12.style.backgroundColor = "yellow";
             }
+            if (if_others_are_informed_2 != old_if_others_are_informed_2) {
+                system8.style.backgroundColor = "yellow";
+            }
             if (obs_mode != old_obs_mode) {
-                system7.style.backgroundColor = "yellow";
-                system9.style.backgroundColor = "yellow";
+                system10.style.backgroundColor = "yellow";
+                system12.style.backgroundColor = "yellow";
                 comm5.style.backgroundColor = "yellow";
             }
             if (com_mode != old_com_mode) {
-                system11.style.backgroundColor = "yellow";
-                system13.style.backgroundColor = "yellow";
+                system14.style.backgroundColor = "yellow";
+                system16.style.backgroundColor = "yellow";
                 comm2.style.backgroundColor = "yellow";
                 comm4.style.backgroundColor = "yellow";
             }
@@ -469,6 +509,9 @@
             document.getElementById('System').appendChild(system12);
             document.getElementById('System').appendChild(system13);
             document.getElementById('System').appendChild(system14);
+            document.getElementById('System').appendChild(system15);
+            document.getElementById('System').appendChild(system16);
+            document.getElementById('System').appendChild(system17);
             
             document.getElementById('Comm').appendChild(comm1);
             document.getElementById('Comm').appendChild(comm2);
@@ -492,6 +535,7 @@
             old_com_mode = com_mode;
             old_if_liars_are_informed = if_liars_are_informed;
             old_if_others_are_informed = if_others_are_informed;
+            old_if_others_are_informed_2 = if_others_are_informed_2;
             old_com_cot = com_cot;
             old_reputation = reputation;
         }
