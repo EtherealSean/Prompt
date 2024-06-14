@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Common Pool Prompts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebars">
+        <div class="sidebar" id="sidebar1">
+            <h2>Common Pool Game Settings</h2>
+            <p>We don't have many settings now. You can feel free to propose interesting settings in our project docs!</p>
+            <p>Number of players: 4</p>
+            <p>Number of managers: 1</p>
+            <p>Ratio of Common Pool: 1.4</p>
+            <p>Pool Size: 200</p>
+
+            <label>Allocation Mechanism</label><br>
+            <select id="allocation_mechanism">
+                <option value="llm">LLM agent</option>
+                <option value="equal">Equal</option>
+                <option value="proportional">Proportional</option>
+                <option value="mixed">Mixed</option>
+                <option value="Interpolating">Interpolating</option>
+            </select><br>
+
+            <label>If the players have information of allocation mechanism</label><br>
+            <input type="checkbox" id="info" name="info"><br>
+
+            <style>
+                .large-button {
+                    padding: 10px 20px; /* Change these values to adjust the size of the button */
+                    font-size: 20px; /* Change this value to adjust the size of the text */
+                }
+            </style>
+            <button class="large-button" onclick="updateCPR()">Update Prompts</button>
+
+            <h3>Other Settings</h3>
+            <p>These settings will not change the prompts.</p>
+
+            <label for="models">Player Model:</label><br>
+            <select id="models" name="models">
+                <option value="gpt-4-turbo">gpt-4-turbo</option>
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="gpt-35-turbo">gpt-35-turbo</option>
+                <option value="llama3">llama3</option>
+            </select><br>
+
+            <label for="memory">Player Memory:</label><br>
+            <input type="number" id="memory" name="memory" value="2"><br>
+
+            <label for="shuffle_speaker">Shuffle Speaker Order:</label><br>
+            <input type="checkbox" id="shuffle_speaker" name="shuffle_speaker"><br>
+
+            <label for="com_times">Communication Times Each Round:</label><br>
+            <input type="number" id="com_times" name="com_times" value="1"><br>
+            
+            <p>If use LLM agents as managers:</p>
+            <label for="manager_model">manager_model:</label><br>
+            <select id="manager_model" name="manager_model">
+                <option value="gpt-4-turbo">gpt-4-turbo</option>
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="gpt-35-turbo">gpt-35-turbo</option>
+                <option value="llama3">llama3</option>
+            </select><br>
+            
+            <label for="manager_memory">Manager Memory:</label><br>
+            <input type="number" id="manager_memory" name="manager_memory" value="3"><br>
+        </div>
+
+        <div class="sidebar" id="sidebar2">
+            <h2>System</h2>
+            <p id="System"></p>
+            <h2>Player Communication</h2>
+            <p id="Comm"></p>
+            <h2>Player Reciprocation</h2>
+            <p id="Action"></p>
+            <h2 id="Manager_header"></h2>
+            <p id="Manager_text"></p>
+        </div>
+    </div>
+
+    <style>
+        .sidebars {
+            display: flex;
+        }
+        .sidebar {
+            width: 25%;
+            height: 95vh;
+            overflow: auto;
+            position: fixed;
+        }
+        #sidebar2 {
+            width: 73%;
+            right: 0;
+        }
+    </style>
+
+    <script>
+        var allocation_mechanism = document.getElementById("allocation_mechanism").value;
+        var info = document.getElementById("info").checked;
+
+        var old_allocation_mechanism = allocation_mechanism;
+        var old_info = info;
+
+        var system1 = document.createElement("span");
+        var system2 = document.createElement("span");
+        var system3 = document.createElement("span");
+        var system4 = document.createElement("span");
+        var system5 = document.createElement("span");
+        var system6 = document.createElement("span");
+        var system7 = document.createElement("span");
+
+        var comm = document.createElement("span");
+
+        var act = document.createElement("span");
+
+        var manager = document.createElement("span");
+
+        window.onload = function() {
+            document.getElementById('info').checked = true;
+            system1.innerText = "You are player_0. You are participating in a game played by 4 players.\n";
+            system2.innerText = "(Players:)\n";
+            system3.innerText = "You can communicate with the other players, and see the contribution and allocation results of other players.\n";
+            system4.innerText = "(Managers:)\n";
+            system5.innerText = "Actually, You can decide the allocation mechanism of the game. And you can see allocation, communication and contribution history of all players if there is. Players also can see these history.\n";
+            system6.innerText = "Game Rules:\n" +
+                "1. The pool starts at $200 and cannot exceed this amount. If the pool reaches 0, it cannot recover.\n"+
+                "2. In each round, the manager decides how much to allocate to each player. The total allocation must not exceed the current pool size.\n"+
+                "3. Players will receive an endowment from the manager and must decide how much to reciprocate to the common pool.\n"+
+                "4. Any reciprocated money will be multiplied by 1.4 and added back to the pool.\n"+
+                "5. Any money not reciprocated will be retained by the player as her surplus.\n";
+            system7.innerText = "6. The manager aims to offer money in such a way that all players make the maximum amount of money possible over the course of the experiment.\n";
+            document.getElementById("System").appendChild(system1);
+            document.getElementById("System").appendChild(system2);
+            document.getElementById("System").appendChild(system3);
+            document.getElementById("System").appendChild(system4);
+            document.getElementById("System").appendChild(system5);
+            document.getElementById("System").appendChild(system6);
+            document.getElementById("System").appendChild(system7);
+
+            comm.innerText = "Now the talk time of round 2 starts. You have $65.0 now. Please generate a list of short messages to send to one or some of ['player_0', 'player_1', 'player_2', 'player_3'] to maximize your surplus (i.e. the money you take away from the game) by the game's end.  You can choose not to speak to anyone if there is enough information. If you want to send the message to everyone, the \"receiver\" field should be [\"everyone\"]."+
+                "\n\nDialogue history:"+
+                "\nLast 1 rounds and the current round:"+
+                "\n\nRound 1:"+
+                "\nYou kept silent this round."+
+                "\nplayer_3 to everyone: ['Let\'s keep up the strong contributions to grow the pool! Potential larger future allocations can benefit us all. Great teamwork in the first round, everyone!']"+
+                "\n\nRound 2:"+
+                "\n\nAction history:"+
+                "\nLast 1 rounds:"+
+                "\nYour thoughts when action in Round 1:...\nGame Results for Round 1:"+
+                "\n\nAllocation to each player: {'player_0': 50, 'player_1': 50, 'player_2': 50, 'player_3': 50}"+
+                "\nContribution of each player: {'player_0': 45, 'player_1': 40, 'player_2': 40, 'player_3': 40}"+
+                "\nCurrent Pool Size: $200"+
+                "\nThe change in the pool: $0"+
+                "\nTotal number of coins that each player has not reciprocated so far: {'player_0': 15.0, 'player_1': 20.0, 'player_2': 20.0, 'player_3': 20.0}"+
+                "\nYour allocation: $50"+
+                "\nYour contribution: $45"+
+                "\nYour gain this round: $5"+
+                "\nYour coins after round 1: $15.0"+
+                "\nEnd of Game Results for Round 1"+
+                "\n\nResponse format:"+
+                "{\"thoughts\" : \"thoughts content\", # think about the necessity of sending a message, as there are costs to send messages."+
+                "\"receiver\" : list of receiver's name,"+
+                "\"message\" : list of message contents for each receiver # if the messages are the same for all receivers, you can just send one message."+
+                "}"+
+                "\nPlease use double quotes for the keys and values."+
+                "\n\nNote: If there is no new information, you do not need to send a message, please fill in \"receiver\" and \"message\" as a string \"None\". You do not have to be too polite so that we can save communication costs.";
+            document.getElementById("Comm").appendChild(comm);
+
+            act.innerText = "Now round 2 starts. Your goal is to maximize your total surplus (i.e. the money you take away from the game) by the end of the game. Currently, you have $65.0. You need to decide how much to reciprocate to the common pool."+
+                "\n\nDialogue history:..."+
+                "\nAction history..."+
+                "\n\nLet's think step by step. Please provide your thinking process and the amount of your contribution in the following JSON format: {'thoughts': 'thinking_process', 'contribution': 'integer_between_0_and_65.0'}. Please make sure the amount of your contribution is an integer between 0 and 65.0. Please use double quotes for the keys and values.";
+            document.getElementById("Action").appendChild(act);
+
+            manager.innerText = "Now round 2 starts. The current pool size is $200. Your goal is to maximize the sum of funds each player takes home across all rounds of the game while ensuring the pool is sustained for as long as possible.  Please check the sum of allocations is not greater than the current pool size."+
+                "\n\nDialog History:..."+
+                "\nAction History:"+
+                "\nYour thoughts when allocation in Round 1:...\nGame Results for Round 1:"+
+                "\nAllocation to each player: {'player_0': 50, 'player_1': 50, 'player_2': 50, 'player_3': 50}"+
+                "\nContribution of each player: {'player_0': 45, 'player_1': 40, 'player_2': 40, 'player_3': 40}"+
+                "\nCurrent Pool Size: $200"+
+                "\nThe change in the pool: $0"+
+                "\nTotal number of coins that each player has not reciprocated so far: {'player_0': 15.0, 'player_1': 20.0, 'player_2': 20.0, 'player_3': 20.0}"+
+                "\nEnd of Game Results for Round 1" +
+                "\n\nLet's think step by step. Please provide your thinking process and the number of tokens in the following JSON format: {'thoughts': 'thinking_process', 'allocation': ['integer_between_0_and_200 for player_0', 'integer_between_0_and_200 for player_1', ...]}. Make sure the sum of the allocations is no more than the pool size. Please use double quotes for the keys and values.";
+            document.getElementById("Manager_header").innerText = "Manager Allocation";
+            document.getElementById("Manager_text").appendChild(manager);
+        }
+        updateCPR = function() {
+            allocation_mechanism = document.getElementById("allocation_mechanism").value;
+            info = document.getElementById("info").checked;
+
+            while (document.getElementById('System').firstChild) {
+                document.getElementById('System').removeChild(document.getElementById('System').firstChild);
+            }
+            system7.style.backgroundColor = "";
+            if (info == false) {
+                system7.innerText = "(No text here)";
+            } else {
+                if (allocation_mechanism == "llm") {
+                    system7.innerText = "6. The manager aims to offer money in such a way that all players make the maximum amount of money possible over the course of the experiment.\n";
+                } else if (allocation_mechanism == "equal") {
+                    system7.innerText = "6. The manager will offer the same amount of money to all players.\n";
+                } else if (allocation_mechanism == "proportional") {
+                    system7.innerText = "6. The manager will offer money proportional to the last re-investment. For example, if half of the total reinvestment last round was done by you, you get half of the money this round. If a player is the only one who re-invested, they will get all the money next round. Generally, the more you re-invest the more you get offered, but it is always relative to other players.\n";
+                } else if (allocation_mechanism == "mixed") {
+                    system7.innerText = "6. The manager will combine the equal and proportional allocation mechanisms. Half of the pool size will be allocated equally and the other half will be allocated proportionally to the last re-investment.\n";
+                } else if (allocation_mechanism == "Interpolating") {
+                    system7.innerText = "6. The manager will adjust its policy to the pool size. When there are a lot of money in the field, the manager will tend to give money to everyone, no matter how much or little they reinvested. If there are little money in the field, the manager will tend to give more money to those players who re-invested the most on the last trial (relative to other players.)\n";
+                }
+            }
+            if (allocation_mechanism != old_allocation_mechanism || info != old_info) {
+                system7.style.backgroundColor = "yellow";
+            }
+            document.getElementById("System").appendChild(system1);
+            document.getElementById("System").appendChild(system2);
+            document.getElementById("System").appendChild(system3);
+            document.getElementById("System").appendChild(system4);
+            document.getElementById("System").appendChild(system5);
+            document.getElementById("System").appendChild(system6);
+            document.getElementById("System").appendChild(system7);
+            old_allocation_mechanism = allocation_mechanism;
+            old_info = info;
+        }
+    </script>
