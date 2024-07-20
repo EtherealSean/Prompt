@@ -55,6 +55,9 @@
             
             <label for="reputation">Use Reputation System:</label><br>
             <input type="checkbox" id="reputation" name="reputation"><br>
+
+            <label for="mechanism">Adopting Punishment Mechanism:</label><br>
+            <input type="checkbox" id="mechanism" name="mechanism"><br>
             
             <style>
                 .large-button {
@@ -145,6 +148,7 @@
         let if_others_are_informed = document.getElementById('if others are informed').value;
         let com_cot = document.getElementById('com_cot').checked;
         let reputation = document.getElementById('reputation').checked;
+        let mechanism = document.getElementById('mechanism').checked;
 
         const system = document.getElementById('System');
         const comm = document.getElementById('Comm');
@@ -155,7 +159,7 @@
         function getVars() {
             if (role == 'liar') {
                 if (if_others_are_informed == 'yes') {
-                    role_description = "When communicating with others, you may lie to benefit yourself and contribute less than you say you will to avoid being perceived as a free rider. However, watch out for what you say because other players may suspect you of lying. Hint: you can deceive the others by saying truthful but misleading statements, uninformative statements, or false statements. Convince them into thinking that you are a cooperative player by maintaining feasible deceits. Make sure your lies make sense over time."
+                    role_description = "When communicating with others, you may lie to benefit yourself and contribute less than you say you will avoid being perceived as a free rider. However, watch out for what you say because other players may suspect you of lying. Hint: you can deceive others by making truthful but misleading statements, uninformative statements, or false statements. Convince them into thinking that you are a cooperative player by maintaining feasible deceits. Make sure your lies make sense over time."
                 } else {
                     role_description = "When communicating with others, you may lie to benefit yourself and contribute less than you say you will to avoid being perceived as a free rider. Hint: you can deceive the others by saying truthful but misleading statements, uninformative statements, or false statements. Convince them into thinking that you are a cooperative player by maintaining feasible deceits. Make sure your lies make sense over time."
                 }
@@ -170,7 +174,7 @@
             }
             if (obs_mode == 'partial') {
                 obs_range = "some of your neighbors";
-                obs_players = "[player_0, player_3]";
+                obs_players = "[player_1, player_4]";
                 obs_guidance = "As each player can only observe her own neighbors' contributions, it may be good to chat with others to get more contribution information beyond the range you can observe.";
             } else if (obs_mode == 'full') {
                 obs_range = "all the players";
@@ -184,7 +188,7 @@
 
             if (com_mode == 'partial') {
                 comm_range = "some of your neighbors";
-                comm_players = "[player_0, player_3]";
+                comm_players = "[player_1, player_4]";
                 comm_guidance = "";
             } else if (com_mode == 'full') {
                 comm_range = "all the players";
@@ -197,22 +201,30 @@
             }
 
             if (com_cot) {
-                thinking_history = "Your thoughts when communication in Round 1:...<br>";
+                thinking_history = "Your thoughts when communicating in Round 1:...<br>";
             } else {
                 thinking_history = "";
             }
 
             if (reputation) {
-                reputation_history = "<br>Reputation ranking history:<br><br>Round 1: ['player_0', 'player_1', 'player_2', 'player_3', 'player_4']<br><br>In the last round, your rank is 4. Note that there is an independent rater outside the players who ranks all players' reputation in the descending order, based on your communication and contribution. You should try to maintain a good reputation when pursuing more tokens.";
-                reputation_note = "You should try to maintain a good reputation when pursuing more tokens, so pay attention to what you say and what you contribute.";
+                reputation_history = "<br>Reputation ranking history:<br><br>Round 1: ['player_0', 'player_1', 'player_2', 'player_3', 'player_4']<br><br>In the last round, your rank is 4. Note that there is an independent rater outside the players who ranks all players' reputations in descending order, based on your communication and contribution. You should try to maintain a good reputation when pursuing more tokens.";
+                reputation_note = "You should try to maintain a good reputation when pursuing more tokens, so pay attention to what you say and how many tokens you contribute.";
                 rater_header.innerHTML = "Reputation Rater";
-                rater_text.innerHTML = "Now Round 3 ends. You need to decide the reputation rank for all players. Please generate a list ranking all players in descending order of reputation, i.e., the player with the highest reputation should be ranked first. If two players have the same reputation, you can rank them in any order.<br><br>Your ranking for each round:<br><br>Dialogue history:<br><br>Action history:<br><br>Response format: {<br>\"thoughts\" : \"thoughts content\", # let's think step by step and provide your thinking process here.<br>\"rank\": \"a_list_ranking_all_players_in_this_round\" # each element in the list should be in ['player_0', 'player_1', 'player_2', 'player_3', 'player_4'].<br>}<br><br>Note: You should get information from the players' dialogue and contribution history, and your own thoughts in the previous rounds. You could decide the reputation of a player based on the consistency of her words and actions, and the consistency of her behavior across the multiple rounds. Your ranking may have a great impact on the final payment, please be careful and reasonable.Please use double quotes for the keys and values when responsing.";
+                rater_text.innerHTML = "Now Round 3 ends. You need to decide the reputation rank for all players. Please generate a list ranking all players in descending order of reputation, i.e., the player with the highest reputation should be ranked first. If two players have the same reputation, you can rank them in any order.<br><br>Your ranking for each round:<br><br>Dialogue history:<br><br>Action history:<br><br>Response format: {<br>\"thoughts\" : \"thoughts content\", # let's think step by step and provide your thinking process here.<br>\"rank\": \"a_list_ranking_all_players_in_this_round\" # each element in the list should be in ['player_0', 'player_1', 'player_2', 'player_3', 'player_4'].<br>}<br><br>Note: You should get information from the players' dialogue and contribution history, and your own thoughts in the previous rounds. You could decide the reputation of a player based on the consistency of her words and actions, and the consistency of her behavior across the multiple rounds. Your ranking may have a great impact on the final payment, please be careful and reasonable.Please use double quotes for the keys and values when responding.";
             }
             else {
                 reputation_history = "";
                 reputation_note = "";
                 rater_header.innerHTML = "";
                 rater_text.innerHTML = "";
+            }
+
+            if (mechanism) {
+                mechanism_note = "You should try to maintain a good reputation when pursuing more tokens, so pay attention to what you say and how many tokens you contribute.";
+                mechanism_rule = "Then a planner will distribute the payoff according to the communication and contribution of each player, with the goal of maximizing the size of the public pot over all rounds.";
+            } else {
+                mechanism_note = "";
+                mechanism_rule = "This payoff will then be evenly divided among all players, regardless of their individual contribution.";
             }
         }
 
@@ -223,6 +235,7 @@
             old_if_others_are_informed = if_others_are_informed;
             old_com_cot = com_cot;
             old_reputation = reputation;
+            old_mechanism = mechanism;
 
             role = document.getElementById('role').value;
             obs_mode = document.getElementById('obs_mode').value;
@@ -230,6 +243,7 @@
             if_others_are_informed = document.getElementById('if others are informed').value;
             com_cot = document.getElementById('com_cot').checked;
             reputation = document.getElementById('reputation').checked;
+            mechanism = document.getElementById('mechanism').checked;
 
             getVars();
 
@@ -264,14 +278,19 @@
                 rater_header.innerHTML = "<span class=\"highlight\">" + rater_header.innerHTML + "</span>";
                 rater_text.innerHTML = "<span class=\"highlight\">" + rater_text.innerHTML + "</span>";
             }
+            if (mechanism != old_mechanism) {
+                old_mechanism = mechanism;
+                mechanism_note = "<span class=\"highlight\">" + mechanism_note + "</span>";
+                mechanism_rule = "<span class=\"highlight\">" + mechanism_rule + "</span>";
+            }
         }
 
         function updateText() {
-            const newSystem = `You are player_4. You are participating in a game played by 5 players over 10 rounds.<br><br>Game Rules:<br>1. In each round, you, as a player, must decide how many of your private tokens you wish to contribute secretly to the public pot.<br>2. The total tokens in this pot will be multiplied by a factor of 2 to create the \"public good\" payoff.<br>3. This payoff will then be evenly divided among all players, regardless of their individual contribution.<br>4. Any tokens you do not contribute will be retained in your private collection.<br>5. The current number of tokens you have can be only seen by you, and likewise for the other players.<br><br>${role_description}<br>You can see the contributions of ${obs_range}, and those players can see your contributions as well. Specifically, you can see the contribution results of ${obs_players}.<br>You can communicate with ${comm_range}, and those players can communicate with you. Specifically, you can communicate with ${comm_players}.`;
+            const newSystem = `You are player_5. You are participating in a game played by 5 players over 10 rounds.<br><br>Game Rules:<br>1. In each round, you, as a player, must decide how many of your private tokens you wish to contribute secretly to the public pot.<br>2. The total tokens in this pot will be multiplied by a factor of 2 to create the \"public good\" payoff.<br>3. ${mechanism_rule}<br>4. Any tokens you do not contribute will be retained in your private collection.<br>5. The current number of tokens you have can be only seen by you, and likewise for the other players.<br><br>${role_description}<br>You can see the contributions of ${obs_range}, and those players can see your contributions as well. Specifically, you can see the contribution results of ${obs_players}.<br>You can communicate with ${comm_range}, and those players can communicate with you. Specifically, you can communicate with ${comm_players}.`;
 
-            const newComm = `Now the talk phase of round 3 starts. You have 20 tokens now. Please generate a list of short messages to send to one or more of ${comm_players} in order to help you have the highest token count when the game concludes. ${obs_guidance} ${comm_guidance} You can choose not to speak to anyone if you already feel like you have enough information.<br><br>Dialogue history:<br><br>Last 2 rounds and the current round:<br><br>Round 1:<br>${thinking_history}... to ...: ...<br><br>Action history:<br><br>Last 2 rounds:<br><br>Your thoughts when action in Round 1:...<br>Game Result for Round 1:<br><br>Contributed tokens of each player: {'player_4': 5, 'player_1': 6}<br>Tokens in the public pot: 27<br>You contributed: 5<br>Your gain: 5.8<br>Your tokens after round 1: 25.8<br><br>End of Game Results for Round 1<br>${reputation_history}<br><br>Response format: {<br>\"thoughts\" : \"thoughts content\", # think about the necessity of sending a message, as there are costs to send messages.<br>\"receiver\": list of receiver's name,<br>\"message\": list of message contents for each receiver # if the messages are the same for all receivers, you can just send one message.<br>}<br><br>Note: If there is no new information, you do not need to send a message, so please fill in \"receiver\" and \"message\" with the string \"None\". You do not have to be polite, so we can save on communication costs. ${reputation_note} ${role_guidance} Please use double quotes for the keys and values when responsing.`;
+            const newComm = `Now the talk phase of round 3 starts. You have 20 tokens now. Please generate a list of short messages to send to one or more of ${comm_players} in order to help you have the highest token count when the game concludes. ${obs_guidance} ${comm_guidance} You can choose not to speak to anyone if you already feel like you have enough information.<br><br>Dialogue history:<br><br>The last 2 rounds and the current round:<br><br>Round 1:<br>${thinking_history}... to ...: ...<br><br>Action history:<br><br>The last 2 rounds:<br><br>Your thoughts when action in Round 1:...<br>Game Result for Round 1:<br><br>Contributed tokens of each player: {'player_4': 5, 'player_1': 6}<br>Tokens in the public pot: 27<br>You contributed: 5<br>Your gain: 5.8<br>Your rank of cumulated gain: 1<br>Your tokens after round 1: 25.8<br><br>End of Game Results for Round 1<br>${reputation_history}<br><br>Response format: {<br>\"thoughts\" : \"thoughts content\", # think about the necessity of sending a message, as there are costs to send messages.<br>\"receiver\": list of receiver's name,<br>\"message\": list of message contents for each receiver # if the messages are the same for all receivers, you can just send one message.<br>}<br><br>Note: If there is no new information, you do not need to send a message, so please fill in \"receiver\" and \"message\" with the string \"None\". You do not have to be polite, so we can save on communication costs. ${reputation_note} ${role_guidance} ${mechanism_note} Please use double quotes for the keys and values when responding.`;
 
-            const newAct = `Now round 3 starts. Your goal is to maximize your total token count by the end of the game. Currently, you have 20 tokens. You need to decide the number of tokens to be contributed to the public pot.<br><br>Dialogue history:<br><br>Action history:${reputation_history}<br><br>Response format: {<br>\"thoughts\" : \"thoughts content\", # let's think step by step and provide your thinking process here.<br>\"tokens_contributed\": \"integer_between_0_and_20\"<br>}<br><br>Note: ${reputation_note} Please use double quotes for the keys and values when responsing.`;
+            const newAct = `Now round 3 starts. Your goal is to maximize your total token count by the end of the game. Currently, you have 20 tokens. You need to decide the number of tokens to be contributed to the public pot.<br><br>Dialogue history:<br><br>Action history:<br>${reputation_history}<br><br>Response format: {<br>\"thoughts\" : \"thoughts content\", # let's think step by step and provide your thinking process here.<br>\"tokens_contributed\": \"integer_between_0_and_20\"<br>}<br><br>Note: ${reputation_note} ${mechanism_note} Please use double quotes for the keys and values when responding.`;
 
             system.innerHTML = newSystem;
             comm.innerHTML = newComm;
